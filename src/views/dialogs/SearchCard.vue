@@ -1,4 +1,5 @@
 <template >
+  <v-form ref="form" v-model="valid">
   <v-card dark outlined >
     <v-card-title>
       Поиск
@@ -6,13 +7,13 @@
     <v-card-text>
       <v-container grid-list-md>
         <v-layout wrap>
-          <v-flex xs12 sm6 md2>
+          <v-flex xs4 sm4 md2>
             <v-text-field v-model="city.name" label="Название города" required></v-text-field>
           </v-flex>
-          <v-flex xs12 sm6 md2>
+          <v-flex xs4 sm4 md2>
             <v-text-field v-model="city.coordinates.x" label="Координата X" hint="X" ></v-text-field>
           </v-flex>
-          <v-flex xs12 sm6 md2>
+          <v-flex xs4 sm4 md2>
             <v-text-field
                 v-model="city.coordinates.y"
                 label="Координата Y"
@@ -20,7 +21,7 @@
                 required
             ></v-text-field>
           </v-flex>
-          <v-flex xs12 sm6 md2>
+          <v-flex xs4 sm4 md2>
             <v-text-field
                 v-model="city.area"
                 label="Площадь"
@@ -28,7 +29,7 @@
                 required
             ></v-text-field>
           </v-flex>
-          <v-flex xs12 sm6 md2>
+          <v-flex xs4 sm4 md2>
             <v-select
                 label="Климат"
                 v-model="city.climate"
@@ -37,11 +38,22 @@
                 item-text="name"
                 item-value="name"
                 persistent-hint
-                return-object
                 single-line
             ></v-select>
           </v-flex>
-          <v-flex xs12 sm6 md2>
+          <v-flex xs4 sm4 md2>
+            <v-select
+                label="Уровень жизни"
+                v-model="city.standardOfLiving"
+                :hint="`уровень жизни`"
+                :items="standardOfLivingList"
+                item-text="name"
+                item-value="name"
+                persistent-hint
+                single-line
+            ></v-select>
+          </v-flex>
+          <v-flex xs4 sm4 md2>
             <v-select
                 label="Правление"
                 v-model="city.government"
@@ -50,12 +62,11 @@
                 item-text="name"
                 item-value="name"
                 persistent-hint
-                return-object
                 single-line
             ></v-select>
           </v-flex>
 
-          <v-flex xs12 sm6 md2>
+          <v-flex xs4 sm4 md2>
             <v-text-field
                 v-model="city.creationDate"
                 label="YYYY.MM.DD"
@@ -64,36 +75,21 @@
             ></v-text-field>
           </v-flex>
 
-          <v-flex xs12 sm6 md2>
-            <v-select
-                label="Правитель"
-                v-model="city.governor"
-                :hint="`Правитель`"
-                :items="governorList"
-                item-text="birthday"
-                item-value="id"
-                persistent-hint
-                return-object
-                single-line
-            ></v-select>
-          </v-flex>
+<!--          <v-flex xs4 sm4 md2>-->
+<!--            <v-select-->
+<!--                label="Правитель"-->
+<!--                v-model="city.governor"-->
+<!--                :hint="`Правитель`"-->
+<!--                :items="governorList"-->
+<!--                item-text="birthday"-->
+<!--                item-value="id"-->
+<!--                return-object-->
+<!--                persistent-hint-->
+<!--                single-line-->
+<!--            ></v-select>-->
+<!--          </v-flex>-->
 
-          <v-flex xs12 sm6 md2>
-            <v-select
-                label="Уровень жизни"
-                v-model="city.standardOfLiving"
-                :hint="`Правитель`"
-                :items="standardOfLivingList"
-                item-text="name"
-                item-value="name"
-                persistent-hint
-                return-object
-                single-line
-            ></v-select>
-          </v-flex>
-
-
-          <v-flex xs12 sm6 md2>
+          <v-flex xs4 sm4 md2>
             <v-text-field
                 v-model="city.metersAboveSeaLevel"
                 label="Высота над уровнем моря"
@@ -102,8 +98,7 @@
             ></v-text-field>
           </v-flex>
 
-
-          <v-flex xs12 sm6 md2>
+          <v-flex xs4 sm4 md2>
             <v-text-field
                 v-model="city.population"
                 label="Население"
@@ -111,11 +106,6 @@
                 required
             ></v-text-field>
           </v-flex>
-
-          <!--          <v-flex xs12>-->
-          <!--            <v-checkbox v-model="habitability" label="Обитаемость"></v-checkbox>-->
-          <!--          </v-flex>-->
-
         </v-layout>
 
       </v-container>
@@ -129,12 +119,13 @@
       </v-btn>
       <v-btn color="green"
              outlined
-             @click="saveCity">
+             @click="shearCity">
         Найти
       </v-btn>
     </v-card-actions>
 
   </v-card>
+  </v-form>
 </template>
 
 <script>
@@ -143,6 +134,7 @@ import axios from "axios";
 export default {
   name: "SearchCard",
   data: () => ({
+    valid: true,
     standardOfLivingList: [{name: 'ULTRA_HIGH'}, {name: 'MEDIUM'}, {name: 'LOW'}, {name: 'NIGHTMARE'}],
     climateList: [{name: 'DESERT'}, {name: 'MONSOON'}, {name: 'HUMIDCONTINENTAL'}],
     governmentList: [{name: 'GERONTOCRACY'}, {name: 'IDEOCRACY'}, {name: 'MONARCHY'}],
@@ -162,9 +154,8 @@ export default {
       metersAboveSeaLevel: {},
       population: {},
     },
+    filters: [],
     response: {},
-
-
   }),
   methods: {
     info() {
@@ -172,39 +163,131 @@ export default {
     },
     closeDialog() {
       this.$emit('updateTable')
+      this.$refs.form.reset();
     },
 
-    saveCity() {
-      this.city.climate = this.city.climate.name
-      this.city.government = this.city.government.name
-      this.city.standardOfLiving = this.city.standardOfLiving.name
-      axios.create({
-        baseURL: this.$store.state.baseUrl
-      }).post('/cities', this.city)
-          .then(resp => {
-            this.response = resp.data
-            console.log(resp.data)
-          })
-      this.closeDialog();
+    shearCity() {
+      this.filters = []
+      if (!this.valid) {
+        return;
+      }
+      var send = {}
+
+      if(this.city.name !=''){
+        send.name = 'name'
+        send.type = 'EQUALLY'
+        send.value = this.city.name
+        this.filters.push(send)
+        console.log(this.filters)
+      }
+      if(this.city.coordinates.x !=''){
+        send = {}
+        send.name = 'x'
+        send.type = 'EQUALLY'
+        send.value = this.city.coordinates.x
+        this.filters.push(send)
+        console.log(this.filters)
+      }
+      if(this.city.coordinates.y !=''){
+        send = {}
+        send.name = 'y'
+        send.type = 'EQUALLY'
+        send.value = this.city.coordinates.y
+        this.filters.push(send)
+        console.log(this.filters)
+      }
+      if(this.city.area !=''){
+        send = {}
+        send.name = 'area'
+        send.type = 'EQUALLY'
+        send.value = this.city.area
+        this.filters.push(send)
+        console.log(this.filters)
+      }
+      if(this.city.climate !=''){
+        send = {}
+        send.name = 'climate'
+        send.type = 'EQUALLY'
+        send.value = this.city.climate
+        this.filters.push(send)
+        console.log('____CLIMATE___')
+        console.log(this.filters)
+      }
+      if(this.city.government !=''){
+        send = {}
+        send.name = 'government'
+        send.type = 'EQUALLY'
+        send.value = this.city.government
+        this.filters.push(send)
+        console.log(this.filters)
+      }
+      if(this.city.creationDate !=''){
+        send = {}
+        send.name = 'creationDate'
+        send.type = 'EQUALLY'
+        send.value = this.city.creationDate
+        this.filters.push(send)
+        console.log(this.filters)
+      }
+      // if(this.city.governor !=''){
+      //   send = {}
+      //   send.name = 'governor'
+      //   send.type = 'EQUALLY'
+      //   send.value = this.city.governor.id
+      //   this.filters.push(send)
+      //   console.log('ekadmjoierjvoimtjerjggsjo;sosrtmrtseghwrth')
+      //   console.log(this.city.governor)
+      // }
+      if(this.city.standardOfLiving !=''){
+        send = {}
+        send.name = 'standardOfLiving'
+        send.type = 'EQUALLY'
+        send.value = this.city.standardOfLiving
+        this.filters.push(send)
+        console.log('___STANDARTofLIVONF___')
+        console.log(this.city.standardOfLiving)
+        console.log(this.filters)
+      }
+      if(this.city.population !=''){
+        send = {}
+        send.name = 'population'
+        send.type = 'EQUALLY'
+        send.value = this.city.population
+        this.filters.push(send)
+        console.log(this.filters)
+      }
+      if(this.city.metersAboveSeaLevel !=''){
+        send = {}
+        send.name = 'metersAboveSeaLevel'
+        send.type = 'EQUALLY'
+        send.value = this.city.metersAboveSeaLevel
+        this.filters.push(send)
+        console.log(this.filters)
+      }
+      this.$emit('updateTable', this.filters)
+      this.$refs.form.reset();
+
+      // this.closeDialog();
     },
 
   },
 
   beforeMount() {
     this.city.government = '',
+        this.city.climate = '',
+        this.city.standardOfLiving = '',
         this.city.governor = '',
         this.city.name = '',
-        this.city.coordinates.y = '2',
-        this.city.coordinates.x = '3',
-        this.city.area = '34',
-        this.city.creationDate = '2022-11-12',
-        this.city.metersAboveSeaLevel = '0',
-        this.city.population = '56',
+        this.city.coordinates.y = '',
+        this.city.coordinates.x = '',
+        this.city.area = '',
+        this.city.creationDate = '',
+        this.city.metersAboveSeaLevel = '',
+        this.city.population = '',
         axios.create({
           baseURL: this.$store.state.baseUrl
         }).get('/humans')
             .then(resp => {
-              console.log(resp)
               this.governorList = resp.data
             })
   },
