@@ -24,7 +24,7 @@
             <v-flex xs12 sm6 md4>
               <v-text-field
                   v-model="city.coordinates.y"
-                  :rules="[rules.required, rules.minLen(1), rules.cordY]"
+                  :rules="[rules.required, rules.minLen(1), rules.cordY, rules.celoe]"
                   label="Координата Y"
                   hint="Y"
                   required
@@ -108,7 +108,7 @@
             <v-flex xs12 sm6 md4>
               <v-text-field
                   v-model="city.population"
-                  :rules="[rules.required, rules.minLen(1),rules.moreZero]"
+                  :rules="[rules.required, rules.minLen(1),rules.moreZero,rules.celoe]"
                   label="Население"
                   hint="Население"
                   required
@@ -167,6 +167,7 @@ export default {
     rules: {
       required: value => !!value || 'Поле обязательно для заполнения.',
       cordY: v => parseInt(v) <= 662 || 'Введите число <=662',
+      celoe: v => /^\d+$/.test(v) || 'число должно быть целое',
       moreZero: v => parseInt(v) > 0 || 'Введите значение больше 0',
       cordX: v => parseInt(v) <= 182 || 'Введите число <=182',
       minLen: length => v => v.length >= length || `Минимум ${length} символов`,

@@ -10,8 +10,7 @@ Vue.use(Vuex)
 
 export const store = new Vuex.Store({
   state: {
-    baseUrl: 'https://localhost:10256/soaLabData/api/v1',
-
+    baseUrl: 'https://localhost:10256/soaLabGatway/api/v1',
   }
 })
 

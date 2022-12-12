@@ -75,19 +75,19 @@
             ></v-text-field>
           </v-flex>
 
-<!--          <v-flex xs4 sm4 md2>-->
-<!--            <v-select-->
-<!--                label="Правитель"-->
-<!--                v-model="city.governor"-->
-<!--                :hint="`Правитель`"-->
-<!--                :items="governorList"-->
-<!--                item-text="birthday"-->
-<!--                item-value="id"-->
-<!--                return-object-->
-<!--                persistent-hint-->
-<!--                single-line-->
-<!--            ></v-select>-->
-<!--          </v-flex>-->
+          <v-flex xs4 sm4 md2>
+            <v-select
+                label="Правитель"
+                v-model="city.governor"
+                :hint="`Правитель`"
+                :items="governorList"
+                item-text="birthday"
+                item-value="id"
+                return-object
+                persistent-hint
+                single-line
+            ></v-select>
+          </v-flex>
 
           <v-flex xs4 sm4 md2>
             <v-text-field
@@ -156,6 +156,16 @@ export default {
     },
     filters: [],
     response: {},
+    rules: {
+      required: value => !!value || 'Поле обязательно для заполнения.',
+      cordY: v => parseInt(v) <= 662 || 'Введите число <=662',
+      celoe: v => /^\d+$/.test(v) || 'число должно быть целое',
+      moreZero: v => parseInt(v) > 0 || 'Введите значение больше 0',
+      cordX: v => parseInt(v) <= 182 || 'Введите число <=182',
+      minLen: length => v => v.length >= length || `Минимум ${length} символов`,
+      maxLen: length => v => v.length <= length || `Максимум ${length} символов`,
+
+    },
   }),
   methods: {
     info() {
@@ -229,15 +239,15 @@ export default {
         this.filters.push(send)
         console.log(this.filters)
       }
-      // if(this.city.governor !=''){
-      //   send = {}
-      //   send.name = 'governor'
-      //   send.type = 'EQUALLY'
-      //   send.value = this.city.governor.id
-      //   this.filters.push(send)
-      //   console.log('ekadmjoierjvoimtjerjggsjo;sosrtmrtseghwrth')
-      //   console.log(this.city.governor)
-      // }
+      if(this.city.governor !=''){
+        send = {}
+        send.name = 'governor'
+        send.type = 'EQUALLY'
+        send.value = this.city.governor.id
+        this.filters.push(send)
+        console.log('ekadmjoierjvoimtjerjggsjo;sosrtmrtseghwrth')
+        console.log(this.city.governor)
+      }
       if(this.city.standardOfLiving !=''){
         send = {}
         send.name = 'standardOfLiving'

@@ -6,6 +6,7 @@
           <v-card-title class="text-h5">Изменение города
           </v-card-title>
           <v-card-text>
+
             <v-container grid-list-md>
               <v-layout wrap>
                 <v-flex xs12 sm6 md4>
@@ -25,7 +26,7 @@
                 <v-flex xs12 sm6 md4>
                   <v-text-field
                       v-model="city.coordinates.y"
-                      :rules="[rules.required, rules.cordY]"
+                      :rules="[rules.required, rules.cordY,rules.celoe]"
                       label="Координата Y"
                       hint="Y"
                       required
@@ -109,12 +110,14 @@
                 <v-flex xs12 sm6 md4>
                   <v-text-field
                       v-model="city.population"
-                      :rules="[rules.required,rules.moreZero]"
+                      :rules="[rules.required,rules.moreZero,rules.celoe]"
                       label="Население"
                       hint="Население"
                       required
                   ></v-text-field>
                 </v-flex>
+                <span style="font-size: 15px; color: red">Длина {{lengthToBigCity}} маршрута до города с наибольшей площадью {{bigCity}}</span>
+
               </v-layout>
             </v-container>
           </v-card-text>
@@ -146,8 +149,11 @@
       <v-btn color="green darken-1" dark outlined @click="addflag = true">
         Добавить город
       </v-btn>
-      <v-btn v-if="!searchFlag" color="yellow darken-1" dark outlined @click="searchFlag = true">
+      <v-btn   v-if="!searchFlag" color="yellow darken-1" dark outlined @click="searchFlag = true">
         Поиск
+      </v-btn>
+      <v-btn style="font-size: 10px" v-if="!searchFlag" color="blue darken-1" dark outlined @click="bigCityFlag = true" >
+
       </v-btn>
     </tr>
 
@@ -168,7 +174,6 @@
           @update:items-per-page="log"
           @update:sort-desc="log"
       >
-
       </v-data-table>
     </tr>
     </tbody>
@@ -192,12 +197,16 @@ export default {
       rules: {
         required: value => !!value || 'Поле обязательно для заполнения.',
         cordY: v => parseInt(v) <= 662 || 'Введите число <=662',
+        celoe: v => /^\d+$/.test(v) || 'число должно быть целое',
         moreZero: v => parseInt(v) > 0 || 'Введите значение больше 0',
         cordX: v => parseInt(v) <= 182 || 'Введите число <=182',
         minLen: length => v => v.length >= length || `Минимум ${length} символов`,
         maxLen: length => v => v.length <= length || `Максимум ${length} символов`,
 
       },
+      bigCity:'',
+      lengthToBigCity:'',
+      bigCityLength:[],
       valid: true, // для vuetify
       message: 'просто ошибка', //для вывода ошибок
       alert: false,
@@ -237,10 +246,10 @@ export default {
         {text: 'x', value: 'coordinates.x'},
         {text: 'y', value: 'coordinates.y'},
         {text: 'creationDate', value: 'creationDate'},
-
       ],
       citiesList: [],
       addflag: false,
+      bigCityFlag: false,
       deleteflag: false,
       deletecity: {},
 
@@ -359,9 +368,23 @@ export default {
     },
     handleClick(value) {
       const index = this.citiesList.indexOf(value)
-      console.log(index)
       // this.getCitiesInfo()
       this.city = JSON.parse(JSON.stringify(value));
+      axios.create({
+        baseURL: this.$store.state.baseUrl
+      }).get(`/cities/calculate/to-largest/${this.city.id}`)
+          .then(resp => {
+            if (resp)
+            this.bigCity = resp.data[0].nameCity
+            this.lengthToBigCity = resp.data[0].length
+          }).catch(() => {
+        console.warn('Not good man :(');
+        this.message = 'Не получилось загрузить список городов, попробуйте обновить страницу'
+        this.alert = true;
+      })
+      console.log('-=-=-=-=-=-=-')
+      console.log(this.bigCity)
+      console.log(this.lengthToBigCity)
       this.index = index;
       this.deleteflag = true;
 
